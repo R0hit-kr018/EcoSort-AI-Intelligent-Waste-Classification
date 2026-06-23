@@ -362,28 +362,35 @@ elif mode == "📸 Predict":
                     st.error(f"❌ Prediction error: {e}")
 
             if label:
-                info = WASTE_INFO.get(label.lower(), {})
-                emoji = info.get("emoji", "♻️")
-                st.markdown(f"""
-                <div class="prediction-box">
-                    <div class="pred-icon">{emoji}</div>
-                    <div class="pred-label">{label.upper()}</div>
-                </div>""", unsafe_allow_html=True)
-
                 conf_pct = confidence * 100
-                if confidence >= 0.90:
-                    st.success(f"🎯 Confidence: **{conf_pct:.1f}%** — High")
-                elif confidence >= 0.70:
-                    st.warning(f"🎯 Confidence: **{conf_pct:.1f}%** — Medium")
+                if confidence < 0.55:
+                    st.markdown(f"""
+                    <div class="prediction-box" style="border-color: #EF9A9A; background: rgba(239, 154, 154, 0.1);">
+                        <div class="pred-icon">⚠️</div>
+                        <div class="pred-label" style="color: #EF9A9A; letter-spacing: 2px;">UNRECOGNIZED</div>
+                    </div>""", unsafe_allow_html=True)
+                    st.error(f"🎯 Confidence: **{conf_pct:.1f}%** — Too Low (Below 55%)")
+                    st.info("💡 **EcoSort AI Hint**: The uploaded image does not match any of our 6 waste categories with high confidence. Please ensure the waste item is clearly visible and belongs to Cardboard, Glass, Metal, Paper, Plastic, or Trash.")
                 else:
-                    st.error(f"🎯 Confidence: **{conf_pct:.1f}%** — Low")
+                    info = WASTE_INFO.get(label.lower(), {})
+                    emoji = info.get("emoji", "♻️")
+                    st.markdown(f"""
+                    <div class="prediction-box">
+                        <div class="pred-icon">{emoji}</div>
+                        <div class="pred-label">{label.upper()}</div>
+                    </div>""", unsafe_allow_html=True)
+
+                    if confidence >= 0.90:
+                        st.success(f"🎯 Confidence: **{conf_pct:.1f}%** — High")
+                    else:
+                        st.warning(f"🎯 Confidence: **{conf_pct:.1f}%** — Medium")
 
                 st.markdown("#### 📊 All Category Probabilities")
                 names = [p[0].capitalize() for p in all_probs]
                 probs = [round(p[1] * 100, 1) for p in all_probs]
                 fig2 = go.Figure(go.Bar(
                     x=probs, y=names, orientation="h",
-                    marker_color=["#00D9FF" if n.lower() == label.lower() else "#1a3a32" for n in names],
+                    marker_color=["#00D9FF" if (n.lower() == label.lower() and confidence >= 0.55) else "#1a3a32" for n in names],
                     text=[f"{p}%" for p in probs], textposition="outside",
                     textfont=dict(color="#E0F2F1")
                 ))
@@ -399,7 +406,7 @@ elif mode == "📸 Predict":
         else:
             st.info("⬅️ Upload an image to get started.")
 
-    if label:
+    if label and confidence >= 0.55:
         info = WASTE_INFO.get(label.lower(), {})
         score = SUSTAINABILITY_SCORE.get(label.lower(), 50)
         st.markdown("---")

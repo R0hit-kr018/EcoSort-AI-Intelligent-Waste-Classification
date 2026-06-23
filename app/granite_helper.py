@@ -53,30 +53,21 @@ def get_granite_response(
     if granite_model is None:
         return "IBM Granite is not available."
 
-    prompt = f"""
-You are an environmental sustainability expert.
-
-Waste Type:
-{waste_type}
-
-Waste Category:
-{category}
-
-Recommended Disposal:
-{disposal}
-
-Environmental Impact:
-{impact}
-
-Provide:
-
-1. Sustainability Recommendation
-2. Environmental Awareness Message
-3. Proper Disposal Guidance
-
-Keep the response under 120 words.
-Use simple language.
-"""
+    prompt = (
+        f"<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n"
+        f"You are an environmental sustainability expert. Provide concise, clear, and actionable sustainability advice. "
+        f"Output ONLY direct paragraphs in plain text. Do NOT write any code, SQL queries, or programming syntax. "
+        f"Do NOT repeat yourself.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n"
+        f"Waste Item: {waste_type}\n"
+        f"Category: {category}\n"
+        f"Standard Disposal: {disposal}\n"
+        f"Impact: {impact}\n\n"
+        f"Based on the above waste details, write exactly three short points in plain text (keep it under 100 words total):\n"
+        f"1. A sustainability recommendation for reuse or minimization.\n"
+        f"2. A brief environmental awareness message.\n"
+        f"3. Proper disposal/recycling guidance.\n\n"
+        f"Response:<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n"
+    )
 
     try:
 
